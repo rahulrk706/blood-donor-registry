@@ -4,12 +4,15 @@ namespace Database\Seeders;
 
 use App\Models\Donor;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DonorSeeder extends Seeder
 {
     public function run(): void
     {
-        Donor::truncate();
+        if (Donor::count() > 0) {
+            return;
+        }
 
         $donors = [
             ['name' => 'Alice Johnson', 'email' => 'alice@example.com', 'phone' => '555-0101', 'blood_type' => 'A+', 'age' => 28, 'gender' => 'female', 'city' => 'New York', 'weight' => 62.0, 'last_donation_date' => '2024-10-15', 'is_available' => true],

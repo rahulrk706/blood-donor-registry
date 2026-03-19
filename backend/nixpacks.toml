@@ -8,4 +8,4 @@ cmds = ["curl -sS https://getcomposer.org/installer | php && php composer.phar i
 cmds = []
 
 [start]
-cmd = "php artisan migrate --force && php artisan db:seed --force && php artisan serve --host=0.0.0.0 --port=$PORT"
+cmd = "php artisan migrate --force; php artisan db:seed --force; php artisan serve --host=0.0.0.0 --port=$PORT"
