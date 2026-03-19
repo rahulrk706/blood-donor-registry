@@ -10,9 +10,9 @@ class DonorSeeder extends Seeder
 {
     public function run(): void
     {
-        if (Donor::count() > 0) {
-            return;
-        }
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        Donor::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
         $donors = [
             ['name' => 'Alice Johnson', 'email' => 'alice@example.com', 'phone' => '555-0101', 'blood_type' => 'A+', 'age' => 28, 'gender' => 'female', 'city' => 'New York', 'weight' => 62.0, 'last_donation_date' => '2024-10-15', 'is_available' => true],
