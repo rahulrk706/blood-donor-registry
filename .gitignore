@@ -1,0 +1,24 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+
+# Backend
+backend/vendor/
+backend/.env
+backend/.env.production
+backend/storage/*.key
+backend/storage/pail/
+backend/public/build/
+backend/public/hot/
+backend/.phpunit.result.cache
+backend/.phpunit.cache/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env.production
