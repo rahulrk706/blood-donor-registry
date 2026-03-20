@@ -63,7 +63,9 @@ function Layout() {
             ) : isLoggedIn ? (
               /* ── Logged-in user nav ── */
               <>
-                <span className="nav-user-name">👤 {user?.name}</span>
+                <NavLink to="/" end className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Home</NavLink>
+                <NavLink to="/donors"  className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Donors</NavLink>
+                <NavLink to="/my-profile" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>👤 {user?.name}</NavLink>
                 <button className="nav-link nav-logout" onClick={() => { clearSession(); navigate('/') }}>Logout</button>
               </>
             ) : (

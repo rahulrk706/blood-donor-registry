@@ -278,8 +278,7 @@ function AllDonors({ isLoggedIn }) {
 // ── Main DonorList page ───────────────────────────────
 export default function DonorList() {
   const navigate = useNavigate()
-  const { isLoggedIn, user } = useUserAuth()
-  const [activeTab, setActiveTab] = useState('all')
+  const { isLoggedIn } = useUserAuth()
 
   return (
     <div className="page">
@@ -291,22 +290,7 @@ export default function DonorList() {
         }
       </div>
 
-      {/* Tabs */}
-      <div className="tab-bar">
-        <button className={`tab-btn ${activeTab === 'all' ? 'active' : ''}`} onClick={() => setActiveTab('all')}>
-          All Donors
-        </button>
-        {isLoggedIn && (
-          <button className={`tab-btn ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
-            My Profile
-          </button>
-        )}
-      </div>
-
-      {activeTab === 'all'
-        ? <AllDonors isLoggedIn={isLoggedIn} />
-        : <MyProfile user={user} />
-      }
+      <AllDonors isLoggedIn={isLoggedIn} />
     </div>
   )
 }

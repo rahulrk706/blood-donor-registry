@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { createDonor, getDonor, updateDonor } from '../api/donors'
 import { createAdminDonor, updateAdminDonor, getAdminUsers } from '../api/admin'
+import { useUserAuth } from '../context/UserAuthContext'
 
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
 
@@ -126,8 +127,14 @@ export default function DonorForm({ isAdmin = false }) {
   const { id }     = useParams()
   const isEdit     = Boolean(id)
   const backPath   = isAdmin ? '/admin/donors' : '/my-profile'
+  const { user }   = useUserAuth()
 
-  const [form, setForm]           = useState(INITIAL_FORM)
+  const [form, setForm]           = useState(() => {
+    if (!isAdmin && !id && user) {
+      return { ...INITIAL_FORM, name: user.name ?? '', email: user.email ?? '' }
+    }
+    return INITIAL_FORM
+  })
   const [linkedUser, setLinkedUser] = useState(null)
   const [errors, setErrors]       = useState({})
   const [submitting, setSubmitting] = useState(false)
