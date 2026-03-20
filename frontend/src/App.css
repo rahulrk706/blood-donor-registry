@@ -765,7 +765,6 @@
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   overflow: hidden;
-  max-width: 680px;
 }
 
 .profile-header {
