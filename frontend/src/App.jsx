@@ -63,9 +63,9 @@ function Layout() {
             ) : isLoggedIn ? (
               /* ── Logged-in user nav ── */
               <>
-                <NavLink to="/" end className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Home</NavLink>
-                <NavLink to="/donors"  className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Donors</NavLink>
                 <NavLink to="/my-profile" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>👤 {user?.name}</NavLink>
+                <NavLink to="/donors"  className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Donors</NavLink>
+                <NavLink to="/contact" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Contact</NavLink>
                 <button className="nav-link nav-logout" onClick={() => { clearSession(); navigate('/') }}>Logout</button>
               </>
             ) : (
@@ -74,7 +74,7 @@ function Layout() {
                 <NavLink to="/" end className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Home</NavLink>
                 <NavLink to="/donors"  className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Donors</NavLink>
                 <NavLink to="/contact" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Contact</NavLink>
-                <NavLink to="/login"   className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Login</NavLink>
+                <NavLink to="/login"   className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Sign In / Sign Up</NavLink>
               </>
             )}
           </nav>

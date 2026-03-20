@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { submitContact } from '../api/contacts'
+import { useUserAuth } from '../context/UserAuthContext'
 
 const CONTACT_INFO = [
   {
@@ -19,10 +20,14 @@ const CONTACT_INFO = [
   },
 ]
 
-const INITIAL = { name: '', email: '', subject: '', message: '' }
-
 export default function Contact() {
-  const [form, setForm] = useState(INITIAL)
+  const { user } = useUserAuth()
+  const [form, setForm] = useState({
+    name: user?.name ?? '',
+    email: user?.email ?? '',
+    subject: '',
+    message: '',
+  })
   const [errors, setErrors] = useState({})
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -67,7 +72,7 @@ export default function Contact() {
   }
 
   function handleReset() {
-    setForm(INITIAL)
+    setForm({ name: user?.name ?? '', email: user?.email ?? '', subject: '', message: '' })
     setErrors({})
     setSubmitted(false)
   }
