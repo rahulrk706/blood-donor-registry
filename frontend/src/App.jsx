@@ -1,5 +1,5 @@
 import { Routes, Route, NavLink, Navigate, useNavigate, useLocation } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { UserAuthProvider, useUserAuth } from './context/UserAuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -24,6 +24,18 @@ function Layout() {
   const { authed, logout } = useAuth()
   const { isLoggedIn, user, clearSession } = useUserAuth()
   const [unread, setUnread] = useState(0)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef(null)
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const isAdminArea = location.pathname.startsWith('/admin')
 
@@ -63,10 +75,28 @@ function Layout() {
             ) : isLoggedIn ? (
               /* ── Logged-in user nav ── */
               <>
-                <NavLink to="/my-profile" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>👤 {user?.name}</NavLink>
+                <NavLink to="/" end className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Home</NavLink>
                 <NavLink to="/donors"  className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Donors</NavLink>
                 <NavLink to="/contact" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Contact</NavLink>
-                <button className="nav-link nav-logout" onClick={() => { clearSession(); navigate('/') }}>Logout</button>
+                <div className="nav-user-dropdown" ref={dropdownRef}>
+                  <button
+                    className={`nav-link nav-user-btn ${dropdownOpen ? 'active' : ''}`}
+                    onClick={() => setDropdownOpen((o) => !o)}
+                  >
+                    👤 {user?.name} <span className="nav-chevron">{dropdownOpen ? '▲' : '▼'}</span>
+                  </button>
+                  {dropdownOpen && (
+                    <div className="nav-dropdown-menu">
+                      <NavLink to="/my-profile" className="nav-dropdown-item" onClick={() => setDropdownOpen(false)}>
+                        Profile
+                      </NavLink>
+                      <div className="nav-dropdown-divider" />
+                      <button className="nav-dropdown-item nav-dropdown-logout" onClick={() => { clearSession(); navigate('/'); setDropdownOpen(false) }}>
+                        Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
               </>
             ) : (
               /* ── Public nav ── */

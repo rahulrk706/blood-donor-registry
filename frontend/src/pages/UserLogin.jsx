@@ -7,7 +7,7 @@ export default function UserLogin() {
   const { saveSession, isLoggedIn } = useUserAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const from     = location.state?.from ?? '/my-profile'
+  const from     = location.state?.from ?? '/'
 
   const [tab, setTab] = useState(location.state?.tab ?? 'login')
 
@@ -41,7 +41,7 @@ export default function UserLogin() {
     }
   }
 
-  if (isLoggedIn) return <Navigate to="/my-profile" replace />
+  if (isLoggedIn) return <Navigate to="/" replace />
 
   // ── Login ──
   function handleLoginChange(e) {

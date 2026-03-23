@@ -156,7 +156,7 @@ export default function DonorForm({ isAdmin = false }) {
           city: d.city ?? '',
           address: d.address ?? '',
           weight: d.weight ?? '',
-          last_donation_date: d.last_donation_date ?? '',
+          last_donation_date: d.last_donation_date ? d.last_donation_date.split('T')[0] : '',
           is_available: d.is_available ?? true,
           notes: d.notes ?? '',
         })
