@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useLocation, Navigate } from 'react-router-dom'
 import { loginUser, registerUser, forgotPassword } from '../api/auth'
 import { useUserAuth } from '../context/UserAuthContext'
+import { getMyDonor } from '../api/donors'
 
 export default function UserLogin() {
   const { saveSession, isLoggedIn } = useUserAuth()
@@ -43,6 +44,15 @@ export default function UserLogin() {
 
   if (isLoggedIn) return <Navigate to="/" replace />
 
+  async function redirectAfterAuth(token) {
+    try {
+      const r = await getMyDonor()
+      navigate(r.data.data ? '/' : '/add', { replace: true })
+    } catch {
+      navigate('/', { replace: true })
+    }
+  }
+
   // ── Login ──
   function handleLoginChange(e) {
     setLoginForm((f) => ({ ...f, [e.target.name]: e.target.value }))
@@ -56,7 +66,7 @@ export default function UserLogin() {
     try {
       const res = await loginUser(loginForm)
       saveSession(res.data.token, res.data.user)
-      navigate(from, { replace: true })
+      await redirectAfterAuth(res.data.token)
     } catch (err) {
       if (err.response?.status === 422) {
         setLoginErrors(err.response.data.errors ?? {})
@@ -81,7 +91,7 @@ export default function UserLogin() {
     try {
       const res = await registerUser(regForm)
       saveSession(res.data.token, res.data.user)
-      navigate('/add', { replace: true })
+      await redirectAfterAuth(res.data.token)
     } catch (err) {
       if (err.response?.status === 422) {
         setRegErrors(err.response.data.errors ?? {})
@@ -108,7 +118,7 @@ export default function UserLogin() {
             Sign In
           </button>
           <button className={`login-tab ${tab === 'register' ? 'active' : ''}`} onClick={() => setTab('register')}>
-            Register as Donor
+            Register
           </button>
         </div>
 

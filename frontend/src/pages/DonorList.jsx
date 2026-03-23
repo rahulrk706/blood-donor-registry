@@ -279,15 +279,25 @@ function AllDonors({ isLoggedIn }) {
 export default function DonorList() {
   const navigate = useNavigate()
   const { isLoggedIn } = useUserAuth()
+  const [hasDonor, setHasDonor] = useState(null)
+
+  useEffect(() => {
+    if (!isLoggedIn) return
+    getMyDonor()
+      .then((r) => setHasDonor(!!r.data.data))
+      .catch(() => setHasDonor(false))
+  }, [isLoggedIn])
 
   return (
     <div className="page">
       <div className="page-header">
         <h1 className="page-title">Donor Registry</h1>
-        {isLoggedIn
-          ? <button className="btn btn-primary" onClick={() => navigate('/add')}>+ Register as Donor</button>
-          : <button className="btn btn-primary" onClick={() => navigate('/login', { state: { from: '/add' } })}>Login to Register</button>
-        }
+        {!isLoggedIn && (
+          <button className="btn btn-primary" onClick={() => navigate('/login', { state: { from: '/add' } })}>Login to Register</button>
+        )}
+        {isLoggedIn && hasDonor === false && (
+          <button className="btn btn-primary" onClick={() => navigate('/add')}>+ Register as Donor</button>
+        )}
       </div>
 
       <AllDonors isLoggedIn={isLoggedIn} />

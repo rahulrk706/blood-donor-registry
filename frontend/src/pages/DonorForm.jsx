@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { createDonor, getDonor, updateDonor } from '../api/donors'
+import { createDonor, getDonor, updateDonor, getMyDonor } from '../api/donors'
 import { createAdminDonor, updateAdminDonor, getAdminUsers } from '../api/admin'
 import { useUserAuth } from '../context/UserAuthContext'
 
@@ -138,11 +138,11 @@ export default function DonorForm({ isAdmin = false }) {
   const [linkedUser, setLinkedUser] = useState(null)
   const [errors, setErrors]       = useState({})
   const [submitting, setSubmitting] = useState(false)
-  const [loading, setLoading]     = useState(isEdit)
+  const [loading, setLoading]     = useState(true)
   const [success, setSuccess]     = useState(false)
 
   useEffect(() => {
-    if (!isEdit) return
+    if (!isEdit) { setLoading(false); return }
     getDonor(id)
       .then((res) => {
         const d = res.data

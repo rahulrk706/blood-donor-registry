@@ -60,6 +60,12 @@ class DonorController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        if ($request->user() && Donor::where('user_id', $request->user()->id)->exists()) {
+            return response()->json([
+                'message' => 'You already have a donor profile.',
+            ], 422);
+        }
+
         $validated = $request->validate([
             'name'               => 'required|string|max:255',
             'email'              => 'required|email|unique:donors,email',
