@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ContactController;
+use App\Http\Controllers\Api\DonationController;
 use App\Http\Controllers\Api\DonorController;
 use Illuminate\Support\Facades\Route;
 
@@ -12,9 +13,15 @@ Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('auth/reset-password',  [AuthController::class, 'resetPassword']);
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('auth/logout',  [AuthController::class, 'logout']);
-    Route::get('auth/me',       [AuthController::class, 'me']);
-    Route::get('auth/my-donor', [DonorController::class, 'myDonor']);
+    Route::post('auth/logout',           [AuthController::class, 'logout']);
+    Route::get('auth/me',                [AuthController::class, 'me']);
+    Route::put('auth/profile',           [AuthController::class, 'updateProfile']);
+    Route::put('auth/change-password',   [AuthController::class, 'changePassword']);
+    Route::get('auth/my-donor',          [DonorController::class, 'myDonor']);
+
+    Route::get('donations',          [DonationController::class, 'index']);
+    Route::post('donations',         [DonationController::class, 'store']);
+    Route::delete('donations/{donation}', [DonationController::class, 'destroy']);
 });
 
 // ── Donors (public read, auth required for write) ─────
@@ -31,6 +38,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::get('admin/users', [AuthController::class, 'adminUsers']);
 
 // ── Admin: Donors ─────────────────────────────────────
+Route::get('admin/donors/{donor}/donations', [DonationController::class, 'adminIndex']);
 Route::post('admin/donors',           [DonorController::class, 'adminStore']);
 Route::put('admin/donors/{donor}',    [DonorController::class, 'adminUpdate']);
 Route::delete('admin/donors/{donor}', [DonorController::class, 'destroy']);

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { getDonors } from '../api/donors'
 import { deleteAdminDonor } from '../api/admin'
 import ConfirmModal from '../components/ConfirmModal'
+import AdminDonorDrawer from '../components/AdminDonorDrawer'
 import { useConfirm } from '../hooks/useConfirm'
 
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
@@ -24,7 +25,8 @@ export default function AdminDonors() {
   const [donors, setDonors]   = useState([])
   const [meta, setMeta]       = useState(null)
   const [loading, setLoading] = useState(true)
-  const [deleting, setDeleting] = useState(null)
+  const [deleting, setDeleting]       = useState(null)
+  const [viewDonor, setViewDonor]     = useState(null)
 
   const [filters, setFilters] = useState({ search: '', blood_type: '', is_available: '', gender: '', city: '' })
   const [sort, setSort]       = useState({ sort_by: 'created_at', sort_dir: 'desc' })
@@ -134,13 +136,14 @@ export default function AdminDonors() {
               <th onClick={() => handleSort('is_available')} className="sortable">Status <SortIcon field="is_available" currentSort={sort.sort_by} currentDir={sort.sort_dir} /></th>
               <th>Account</th>
               <th>Actions</th>
+              <th>Details</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan="10" className="td-center"><div className="spinner" /></td></tr>
+              <tr><td colSpan="11" className="td-center"><div className="spinner" /></td></tr>
             ) : donors.length === 0 ? (
-              <tr><td colSpan="10" className="td-center td-empty">No donors found.</td></tr>
+              <tr><td colSpan="11" className="td-center td-empty">No donors found.</td></tr>
             ) : donors.map((donor) => (
               <tr key={donor.id} className="donor-row">
                 <td className="td-name">
@@ -177,6 +180,11 @@ export default function AdminDonors() {
                     </button>
                   </div>
                 </td>
+                <td>
+                  <button className="btn btn-sm btn-secondary" onClick={() => setViewDonor(donor)}>
+                    View
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -196,6 +204,7 @@ export default function AdminDonors() {
       )}
 
       <ConfirmModal isOpen={isOpen} title={options.title} message={options.message} confirmLabel={options.confirmLabel} onConfirm={handleConfirm} onCancel={handleCancel} />
+      <AdminDonorDrawer donor={viewDonor} onClose={() => setViewDonor(null)} />
     </div>
   )
 }

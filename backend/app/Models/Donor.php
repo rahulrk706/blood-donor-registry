@@ -14,6 +14,11 @@ class Donor extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function donations()
+    {
+        return $this->hasMany(Donation::class);
+    }
+
     protected $fillable = [
         'user_id',
         'name',

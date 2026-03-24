@@ -5,7 +5,8 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
 })
 
-export const getAdminUsers       = (params)     => api.get('/admin/users', { params })
-export const createAdminDonor    = (data)        => api.post('/admin/donors', data)
-export const updateAdminDonor    = (id, data)    => api.put(`/admin/donors/${id}`, data)
-export const deleteAdminDonor    = (id)          => api.delete(`/admin/donors/${id}`)
+export const getAdminUsers            = (params)  => api.get('/admin/users', { params })
+export const createAdminDonor         = (data)    => api.post('/admin/donors', data)
+export const updateAdminDonor         = (id, data) => api.put(`/admin/donors/${id}`, data)
+export const deleteAdminDonor         = (id)      => api.delete(`/admin/donors/${id}`)
+export const getAdminDonorDonations   = (id)      => api.get(`/admin/donors/${id}/donations`)

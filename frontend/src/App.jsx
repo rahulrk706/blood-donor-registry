@@ -11,6 +11,9 @@ import Contact from './pages/Contact'
 import UserLogin from './pages/UserLogin'
 import ResetPassword from './pages/ResetPassword'
 import UserProfile from './pages/UserProfile'
+import DonationsPage from './pages/DonationsPage'
+import AccountSettings from './pages/AccountSettings'
+import AchievementsPage from './pages/AchievementsPage'
 import AdminLogin from './pages/AdminLogin'
 import AdminInbox from './pages/AdminInbox'
 import AdminDonors from './pages/AdminDonors'
@@ -90,6 +93,15 @@ function Layout() {
                       <NavLink to="/my-profile" className="nav-dropdown-item" onClick={() => setDropdownOpen(false)}>
                         Profile
                       </NavLink>
+                      <NavLink to="/donations" className="nav-dropdown-item" onClick={() => setDropdownOpen(false)}>
+                        Donation History
+                      </NavLink>
+                      <NavLink to="/achievements" className="nav-dropdown-item" onClick={() => setDropdownOpen(false)}>
+                        Achievements
+                      </NavLink>
+                      <NavLink to="/account" className="nav-dropdown-item" onClick={() => setDropdownOpen(false)}>
+                        Account Settings
+                      </NavLink>
                       <div className="nav-dropdown-divider" />
                       <button className="nav-dropdown-item nav-dropdown-logout" onClick={() => { clearSession(); navigate('/'); setDropdownOpen(false) }}>
                         Logout
@@ -124,6 +136,9 @@ function Layout() {
 
           {/* User protected */}
           <Route path="/my-profile" element={<UserProtectedRoute><UserProfile /></UserProtectedRoute>} />
+          <Route path="/donations"  element={<UserProtectedRoute><DonationsPage /></UserProtectedRoute>} />
+          <Route path="/account"      element={<UserProtectedRoute><AccountSettings /></UserProtectedRoute>} />
+          <Route path="/achievements" element={<UserProtectedRoute><AchievementsPage /></UserProtectedRoute>} />
           <Route path="/add"        element={<UserProtectedRoute><DonorForm /></UserProtectedRoute>} />
           <Route path="/edit/:id"   element={<UserProtectedRoute><DonorForm /></UserProtectedRoute>} />
 

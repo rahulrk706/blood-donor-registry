@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -89,6 +90,52 @@ class AuthController extends Controller
         throw ValidationException::withMessages([
             'email' => [__($status)],
         ]);
+    }
+
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name'  => 'required|string|max:255',
+            'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
+        ]);
+
+        $user->update($validated);
+
+        // Keep donor record in sync
+        if ($user->donor) {
+            $user->donor->update([
+                'name'  => $validated['name'],
+                'email' => $validated['email'],
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Profile updated successfully.',
+            'user'    => $user->only('id', 'name', 'email'),
+        ]);
+    }
+
+    public function changePassword(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'current_password'      => 'required|string',
+            'password'              => 'required|string|min:8|confirmed|different:current_password',
+            'password_confirmation' => 'required',
+        ]);
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => ['The current password is incorrect.'],
+            ]);
+        }
+
+        $user->update(['password' => Hash::make($request->password)]);
+
+        return response()->json(['message' => 'Password changed successfully.']);
     }
 
     // Admin: list all registered users with their linked donor record
