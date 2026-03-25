@@ -56,6 +56,18 @@ function fmtShort(date) {
 // ── Public home ─────────────────────────────────────────
 function PublicHome() {
   const navigate = useNavigate()
+  const { isLoggedIn } = useUserAuth()
+  const [hasDonor, setHasDonor] = useState(null) // null = loading, false = no profile, true = has profile
+
+  useEffect(() => {
+    if (!isLoggedIn) { setHasDonor(false); return }
+    getMyDonor()
+      .then(() => setHasDonor(true))
+      .catch(() => setHasDonor(false))
+  }, [isLoggedIn])
+
+  const showRegister = !isLoggedIn || hasDonor === false
+
   return (
     <div className="home">
       <section className="hero">
@@ -70,9 +82,11 @@ function PublicHome() {
             find available donors in your area — quickly and easily.
           </p>
           <div className="hero-actions">
-            <button className="btn btn-hero-primary" onClick={() => navigate('/add')}>
-              🩸 Register as Donor
-            </button>
+            {showRegister && (
+              <button className="btn btn-hero-primary" onClick={() => navigate('/add')}>
+                🩸 Register as Donor
+              </button>
+            )}
             <button className="btn btn-hero-secondary" onClick={() => navigate('/donors')}>
               Search Donors →
             </button>
@@ -106,14 +120,16 @@ function PublicHome() {
           </p>
           <span className="feature-link">View donor listing →</span>
         </div>
-        <div className="feature-card" onClick={() => navigate('/add')}>
-          <div className="feature-icon" style={{ background: '#fff5f5', color: '#e53e3e' }}>📋</div>
-          <h2 className="feature-title">Become a Donor</h2>
-          <p className="feature-desc">
-            Join the registry in minutes. Fill in your details and blood type to help save lives.
-          </p>
-          <span className="feature-link">Register now →</span>
-        </div>
+        {showRegister && (
+          <div className="feature-card" onClick={() => navigate('/add')}>
+            <div className="feature-icon" style={{ background: '#fff5f5', color: '#e53e3e' }}>📋</div>
+            <h2 className="feature-title">Become a Donor</h2>
+            <p className="feature-desc">
+              Join the registry in minutes. Fill in your details and blood type to help save lives.
+            </p>
+            <span className="feature-link">Register now →</span>
+          </div>
+        )}
       </section>
 
       <section className="blood-info-section">
@@ -378,6 +394,5 @@ function UserDashboard({ user }) {
 
 // ── Root export ─────────────────────────────────────────
 export default function Home() {
-  const { isLoggedIn, user } = useUserAuth()
-  return isLoggedIn ? <UserDashboard user={user} /> : <PublicHome />
+  return <PublicHome />
 }

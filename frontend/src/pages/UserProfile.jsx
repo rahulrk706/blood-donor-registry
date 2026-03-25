@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getMyDonor } from '../api/donors'
+import { getMyDonor, updateDonor } from '../api/donors'
+import { changePassword } from '../api/auth'
 import { useUserAuth } from '../context/UserAuthContext'
+import DonorCard from '../components/DonorCard'
 
 const BLOOD_TYPE_COLORS = {
   'A+': '#e53e3e', 'A-': '#c53030',
@@ -24,11 +26,28 @@ function Field({ label, value, fullWidth = false }) {
   )
 }
 
+function SuccessBanner({ message }) {
+  return (
+    <div className="settings-success">
+      <span className="settings-success-icon">✓</span> {message}
+    </div>
+  )
+}
+
 export default function UserProfile() {
   const navigate              = useNavigate()
-  const { user }              = useUserAuth()
+  const { user, token }       = useUserAuth()
   const [donor, setDonor]     = useState(undefined)
   const [loading, setLoading] = useState(true)
+  const [toggling, setToggling] = useState(false)
+  const [showCard, setShowCard] = useState(false)
+
+  // ── Change password state ─────────────────────────────
+  const [showPw, setShowPw] = useState(false)
+  const [passwords, setPasswords] = useState({ current_password: '', password: '', password_confirmation: '' })
+  const [passwordErrors, setPasswordErrors] = useState({})
+  const [passwordSuccess, setPasswordSuccess] = useState('')
+  const [passwordSaving, setPasswordSaving] = useState(false)
 
   useEffect(() => {
     getMyDonor()
@@ -36,6 +55,38 @@ export default function UserProfile() {
       .catch(() => setDonor(null))
       .finally(() => setLoading(false))
   }, [])
+
+  async function toggleAvailability() {
+    if (!donor || toggling) return
+    const next = !donor.is_available
+    setToggling(true)
+    setDonor(d => ({ ...d, is_available: next }))
+    try {
+      const res = await updateDonor(donor.id, { is_available: next })
+      setDonor(res.data.data)
+    } catch {
+      setDonor(d => ({ ...d, is_available: !next }))
+    } finally {
+      setToggling(false)
+    }
+  }
+
+  async function handlePasswordSubmit(e) {
+    e.preventDefault()
+    setPasswordErrors({})
+    setPasswordSuccess('')
+    setPasswordSaving(true)
+    try {
+      const res = await changePassword(passwords)
+      setPasswordSuccess(res.data.message || 'Password updated successfully.')
+      setPasswords({ current_password: '', password: '', password_confirmation: '' })
+      setShowPw(false)
+    } catch (err) {
+      if (err.response?.data?.errors) setPasswordErrors(err.response.data.errors)
+    } finally {
+      setPasswordSaving(false)
+    }
+  }
 
   if (loading) {
     return <div className="page center-page"><div className="spinner large" /></div>
@@ -63,6 +114,68 @@ export default function UserProfile() {
             </button>
           </div>
         </div>
+
+        {/* Change Password (available even without donor profile) */}
+        <div className="profile-section-card" style={{ marginTop: 20 }}>
+          <div className="psc-header">
+            <div>
+              <div className="psc-title">Change Password</div>
+              <div className="psc-subtitle">Choose a strong password with at least 8 characters</div>
+            </div>
+            <button
+              type="button"
+              className="btn btn-edit btn-sm"
+              onClick={() => setShowPw(v => !v)}
+            >
+              {showPw ? 'Hide' : 'Change Password'}
+            </button>
+          </div>
+          {passwordSuccess && <SuccessBanner message={passwordSuccess} />}
+          {showPw && (
+            <form onSubmit={handlePasswordSubmit} className="settings-form">
+              <div className="form-group">
+                <label className="form-label">Current Password <span className="required">*</span></label>
+                <input
+                  type="password"
+                  className={`form-input ${passwordErrors.current_password ? 'input-error' : ''}`}
+                  value={passwords.current_password}
+                  onChange={e => setPasswords(p => ({ ...p, current_password: e.target.value }))}
+                  placeholder="Enter current password"
+                />
+                {passwordErrors.current_password && <div className="field-error">{passwordErrors.current_password[0]}</div>}
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">New Password <span className="required">*</span></label>
+                  <input
+                    type="password"
+                    className={`form-input ${passwordErrors.password ? 'input-error' : ''}`}
+                    value={passwords.password}
+                    onChange={e => setPasswords(p => ({ ...p, password: e.target.value }))}
+                    placeholder="Min 8 characters"
+                  />
+                  {passwordErrors.password && <div className="field-error">{passwordErrors.password[0]}</div>}
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Confirm New Password <span className="required">*</span></label>
+                  <input
+                    type="password"
+                    className={`form-input ${passwordErrors.password_confirmation ? 'input-error' : ''}`}
+                    value={passwords.password_confirmation}
+                    onChange={e => setPasswords(p => ({ ...p, password_confirmation: e.target.value }))}
+                    placeholder="Repeat new password"
+                  />
+                  {passwordErrors.password_confirmation && <div className="field-error">{passwordErrors.password_confirmation[0]}</div>}
+                </div>
+              </div>
+              <div className="settings-form-footer">
+                <button type="submit" className="btn btn-primary" disabled={passwordSaving}>
+                  {passwordSaving ? 'Updating…' : 'Update Password'}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
       </div>
     )
   }
@@ -80,16 +193,21 @@ export default function UserProfile() {
         <div className="up-blood-badge">{donor.blood_type}</div>
       </div>
 
-      {/* Single combined card */}
+      {/* Profile info card */}
       <div className="profile-section-card">
         <div className="psc-header">
           <div>
             <div className="psc-title">My Profile</div>
             <div className="psc-subtitle">Personal, contact and blood information</div>
           </div>
-          <button className="btn btn-edit btn-sm" onClick={() => navigate(`/edit/${donor.id}`)}>
-            Edit Profile
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn btn-edit btn-sm" onClick={() => setShowCard(true)}>
+              🖨 Donor Card
+            </button>
+            <button className="btn btn-edit btn-sm" onClick={() => navigate(`/edit/${donor.id}`)}>
+              Edit Profile
+            </button>
+          </div>
         </div>
 
         <div className="profile-grid">
@@ -116,11 +234,22 @@ export default function UserProfile() {
             </span>
           </div>
           <div className="profile-field">
-            <span className="pf-label">Donation Status</span>
+            <span className="pf-label">Donation Availability</span>
             <span className="pf-value">
-              <span className={`status-badge ${donor.is_available ? 'available' : 'unavailable'}`}>
-                {donor.is_available ? 'Available to Donate' : 'Currently Unavailable'}
-              </span>
+              <button
+                className={`ud-avail-toggle ${donor.is_available ? 'ud-avail-on' : 'ud-avail-off'} ${toggling ? 'ud-avail-busy' : ''}`}
+                onClick={toggleAvailability}
+                disabled={toggling}
+                title="Click to toggle your donation availability"
+                style={{ marginTop: 2 }}
+              >
+                <span className="ud-avail-track">
+                  <span className="ud-avail-thumb" />
+                </span>
+                <span className="ud-avail-label">
+                  {toggling ? 'Updating…' : donor.is_available ? 'Available to Donate' : 'Unavailable'}
+                </span>
+              </button>
             </span>
           </div>
           <Field label="Last Donation Date" value={formatDate(donor.last_donation_date)} />
@@ -128,6 +257,77 @@ export default function UserProfile() {
           {donor.notes && <Field label="Notes" value={donor.notes} fullWidth />}
         </div>
       </div>
+
+      {/* Change password card */}
+      <div className="profile-section-card">
+        <div className="psc-header">
+          <div>
+            <div className="psc-title">Change Password</div>
+            <div className="psc-subtitle">Choose a strong password with at least 8 characters</div>
+          </div>
+          <button
+            type="button"
+            className="btn btn-edit btn-sm"
+            onClick={() => setShowPw(v => !v)}
+          >
+            {showPw ? 'Hide' : 'Change Password'}
+          </button>
+        </div>
+
+        {passwordSuccess && <SuccessBanner message={passwordSuccess} />}
+
+        {showPw && (
+          <form onSubmit={handlePasswordSubmit} className="settings-form">
+            <div className="form-group">
+              <label className="form-label">Current Password <span className="required">*</span></label>
+              <input
+                type="password"
+                className={`form-input ${passwordErrors.current_password ? 'input-error' : ''}`}
+                value={passwords.current_password}
+                onChange={e => setPasswords(p => ({ ...p, current_password: e.target.value }))}
+                placeholder="Enter current password"
+              />
+              {passwordErrors.current_password && <div className="field-error">{passwordErrors.current_password[0]}</div>}
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">New Password <span className="required">*</span></label>
+                <input
+                  type="password"
+                  className={`form-input ${passwordErrors.password ? 'input-error' : ''}`}
+                  value={passwords.password}
+                  onChange={e => setPasswords(p => ({ ...p, password: e.target.value }))}
+                  placeholder="Min 8 characters"
+                />
+                {passwordErrors.password && <div className="field-error">{passwordErrors.password[0]}</div>}
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Confirm New Password <span className="required">*</span></label>
+                <input
+                  type="password"
+                  className={`form-input ${passwordErrors.password_confirmation ? 'input-error' : ''}`}
+                  value={passwords.password_confirmation}
+                  onChange={e => setPasswords(p => ({ ...p, password_confirmation: e.target.value }))}
+                  placeholder="Repeat new password"
+                />
+                {passwordErrors.password_confirmation && <div className="field-error">{passwordErrors.password_confirmation[0]}</div>}
+              </div>
+            </div>
+
+            <div className="settings-form-footer">
+              <button type="submit" className="btn btn-primary" disabled={passwordSaving}>
+                {passwordSaving ? 'Updating…' : 'Update Password'}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+
+      {showCard && (
+        <DonorCard donor={donor} user={user} onClose={() => setShowCard(false)} />
+      )}
 
     </div>
   )

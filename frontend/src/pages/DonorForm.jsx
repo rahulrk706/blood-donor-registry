@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { createDonor, getDonor, updateDonor, getMyDonor } from '../api/donors'
 import { createAdminDonor, updateAdminDonor, getAdminUsers } from '../api/admin'
+import { updateProfile } from '../api/auth'
 import { useUserAuth } from '../context/UserAuthContext'
 
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
@@ -127,7 +128,7 @@ export default function DonorForm({ isAdmin = false }) {
   const { id }     = useParams()
   const isEdit     = Boolean(id)
   const backPath   = isAdmin ? '/admin/donors' : '/my-profile'
-  const { user }   = useUserAuth()
+  const { user, token, saveSession } = useUserAuth()
 
   const [form, setForm]           = useState(() => {
     if (!isAdmin && !id && user) {
@@ -191,7 +192,14 @@ export default function DonorForm({ isAdmin = false }) {
 
     try {
       if (isEdit) {
-        isAdmin ? await updateAdminDonor(id, payload) : await updateDonor(id, payload)
+        if (isAdmin) {
+          await updateAdminDonor(id, payload)
+        } else {
+          await updateDonor(id, payload)
+          // Also sync name & email back to the user account
+          const profileRes = await updateProfile({ name: form.name, email: form.email })
+          saveSession(token, profileRes.data.user)
+        }
       } else {
         isAdmin ? await createAdminDonor(payload) : await createDonor(payload)
       }

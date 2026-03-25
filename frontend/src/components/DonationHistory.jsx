@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { getDonations, createDonation, deleteDonation } from '../api/donations'
+import ConfirmModal from './ConfirmModal'
+import { useConfirm } from '../hooks/useConfirm'
 
 const TYPES = {
   whole_blood:      { label: 'Whole Blood',      days: 56,  color: '#e53e3e' },
@@ -48,6 +50,7 @@ function getCountdown(targetDate) {
 const EMPTY_FORM = { donation_date: '', donation_type: 'whole_blood', blood_bank: '', city: '', notes: '' }
 
 export default function DonationHistory({ donor, onDonationChange, onDonationsLoaded }) {
+  const { confirm, isOpen, options, handleConfirm, handleCancel } = useConfirm()
   const [donations, setDonations]   = useState([])
   const [loading, setLoading]       = useState(true)
   const [showForm, setShowForm]     = useState(false)
@@ -97,7 +100,12 @@ export default function DonationHistory({ donor, onDonationChange, onDonationsLo
   }
 
   async function handleDelete(id) {
-    if (!window.confirm('Remove this donation record?')) return
+    const ok = await confirm({
+      title: 'Remove Donation',
+      message: 'Remove this donation record? This cannot be undone.',
+      confirmLabel: 'Yes, Remove',
+    })
+    if (!ok) return
     await deleteDonation(id)
     load()
     onDonationChange?.()
@@ -320,6 +328,15 @@ export default function DonationHistory({ donor, onDonationChange, onDonationsLo
           })}
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={isOpen}
+        title={options.title}
+        message={options.message}
+        confirmLabel={options.confirmLabel}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
     </div>
   )
 }

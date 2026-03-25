@@ -55,7 +55,7 @@ function Layout() {
     <div className="app">
       <header className="header">
         <div className="header-inner">
-          <div className="logo" onClick={() => navigate(isLoggedIn ? '/my-profile' : '/')} style={{ cursor: 'pointer' }}>
+          <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
             <span className="logo-icon">🩸</span>
             <span className="logo-text">Blood Donor Registry</span>
           </div>
@@ -98,9 +98,6 @@ function Layout() {
                       </NavLink>
                       <NavLink to="/achievements" className="nav-dropdown-item" onClick={() => setDropdownOpen(false)}>
                         Achievements
-                      </NavLink>
-                      <NavLink to="/account" className="nav-dropdown-item" onClick={() => setDropdownOpen(false)}>
-                        Account Settings
                       </NavLink>
                       <div className="nav-dropdown-divider" />
                       <button className="nav-dropdown-item nav-dropdown-logout" onClick={() => { clearSession(); navigate('/'); setDropdownOpen(false) }}>
